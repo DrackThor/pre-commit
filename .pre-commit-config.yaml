@@ -1,0 +1,90 @@
+# .pre-commit-config.yaml
+repos:
+  # overall file checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      # general purpose
+      - id: trailing-whitespace
+      - id: fix-byte-order-marker
+      - id: check-executables-have-shebangs
+      - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: check-symlinks
+      - id: destroyed-symlinks
+      - id: end-of-file-fixer
+      - id: check-case-conflict
+      - id: check-illegal-windows-names
+      - id: check-vcs-permalinks
+      - id: forbid-submodules
+      - id: no-commit-to-branch # <- disallow commits to master/main
+      # security
+      - id: detect-private-key
+        exclude: |
+          (?x)(
+              ^creds/|
+              ^README.md
+          )
+      # file format and validity
+      - id: check-yaml
+        args:
+          - --allow-multiple-documents
+      - id: check-json
+      - id: check-toml
+      - id: check-xml
+      - id: debug-statements
+      # Python stuff
+      - id: check-ast
+      - id: name-tests-test
+
+  # commit-message & author
+  # https://jorisroovers.com/gitlint/
+  - repo: https://github.com/jorisroovers/gitlint
+    rev: v0.19.1
+    hooks:
+      - id: gitlint
+        args:
+          - -cgeneral.verbosity=2
+          - -cgeneral.ignore=B6
+          - -cgeneral.ignore-merge-commits=true
+          - -cgeneral.regex-style-search=True
+          - -cgeneral.staged=true
+          - -ctitle-max-length.line-length=80
+          - '-ctitle-match-regex.regex=^(feat|fix|try|maintain)!?(\(.*\))?:.+|^Merge branch.*'
+          - "-cauthor-valid-email.regex=[^@]+@fullstacks\.eu|daniel@drackthor\.me"
+          - --msg-filename
+
+  # Ruff: Linting and formatting
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.4  # Match your Ruff version
+    hooks:
+      - id: ruff-check
+        name: Ruff Linter
+        args: [--fix]  # Auto-fix where possible
+        types_or: [ python, pyi ] # ignore Jupyter notebooks
+      - id: ruff-format
+        name: Ruff Formatter
+        types_or: [ python, pyi ]
+
+  # uv: Ensure lockfile consistency
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    # uv version.
+    rev: 0.9.8
+    hooks:
+      - id: uv-lock
+
+  # Pytest: Run tests before committing
+  - repo: local
+    hooks:
+      - id: pytest
+        name: Run Pytest - 'uv run pytest'
+        entry: uv run pytest
+        language: system
+        types: [python]
+        pass_filenames: false
+
+  # TODO: Terraform hooks
+  # https://github.com/antonbabenko/pre-commit-terraform
+
+  # TODO: Dockerfile hooks
+  # https://github.com/hadolint/hadolint
